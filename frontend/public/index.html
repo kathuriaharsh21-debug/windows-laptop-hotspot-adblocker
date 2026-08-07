@@ -35,7 +35,7 @@
 
     .card { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
     .card-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
-    .btn { padding: 8px 16px; border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; }
+    .btn { padding: 8px 16px; border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s ease; }
     .tag { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
     table { width: 100%; border-collapse: collapse; margin-top: 8px; }
     th { text-align: left; padding: 12px; font-size: 13px; color: var(--text-muted); border-bottom: 1px solid var(--card-border); }
@@ -64,14 +64,24 @@
       <button class="tab-btn" onclick="showTab('setup')">⚙️ Hotspot Setup</button>
     </div>
 
-    <!-- Master ON / OFF Toggle Button -->
-    <button id="master-toggle-btn" class="btn" style="background: #10b981; color: #ffffff; padding: 10px 20px; font-size: 14px; font-weight: 700; border-radius: 20px; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);" onclick="toggleAdBlocker()">
-      🟢 PROTECTION ON
+    <!-- Master ON / OFF Toggle Button: DEFAULT IS OFF (PAUSED) -->
+    <button id="master-toggle-btn" class="btn" style="background: #ef4444; color: #ffffff; padding: 10px 20px; font-size: 14px; font-weight: 700; border-radius: 20px; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);" onclick="toggleAdBlocker()">
+      🔴 PROTECTION OFF (PAUSED)
     </button>
   </header>
 
   <main>
     <section id="tab-dashboard">
+      <div class="card" id="status-card-banner" style="background: linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(30,41,59,0.8) 100%); border: 1px solid rgba(239,68,68,0.3);">
+        <div class="card-title">
+          <span id="banner-status-title">🔴 Protection Paused (Default Mode)</span>
+          <span class="tag" id="banner-status-tag" style="background:rgba(239,68,68,0.2); color:#fca5a5">Click Toggle Switch to Activate</span>
+        </div>
+        <p style="font-size: 13.5px; color: var(--text-muted);" id="banner-status-desc">
+          Click the master toggle button above to activate real DNS ad-sinkholing and Layer 4 SSAI filtering across your Windows Mobile Hotspot.
+        </p>
+      </div>
+
       <div class="metrics-grid">
         <div class="metric-card">
           <div class="metric-label">Real Ads & Trackers Blocked</div>
@@ -89,9 +99,9 @@
           <div class="metric-sub" style="font-size: 12px; color: #a5b4fc;">Samsung, LG, Roku, SSAI lists</div>
         </div>
         <div class="metric-card">
-          <div class="metric-label">Live Connected Devices</div>
+          <div class="metric-label">Actively Connected Devices</div>
           <div class="metric-value" id="val-real-devices-count">0</div>
-          <div class="metric-sub" style="font-size: 12px; color: var(--accent);">Connected to Hotspot</div>
+          <div class="metric-sub" style="font-size: 12px; color: var(--accent);">Active Hotspot Clients</div>
         </div>
       </div>
 
@@ -112,9 +122,9 @@
 
     <section id="tab-devices" class="hidden">
       <div class="card">
-        <div class="card-title">📺 Devices Currently Connected to Laptop Hotspot</div>
+        <div class="card-title">📺 Actively Connected Devices (Live Ping Verified)</div>
         <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
-          This table automatically reads live Windows ARP & Hotspot DHCP table data. Connect your TV, laptop, or phone to your Hotspot to see it appear here instantly:
+          This table automatically verifies real active ICMP reachability to eliminate stale disconnected ARP entries. Devices disappear immediately when disconnected:
         </p>
         <table>
           <thead>
@@ -122,7 +132,7 @@
               <th>Device IP Address</th>
               <th>MAC Address</th>
               <th>Device Type</th>
-              <th>Status</th>
+              <th>Active Status</th>
             </tr>
           </thead>
           <tbody id="real-devices-table-body">
@@ -140,7 +150,6 @@
         <ol style="padding-left: 20px; line-height: 1.8; color: var(--text-muted); font-size: 14px;">
           <li>Right-click <code>setup-windows-hotspot.ps1</code> and select <strong>Run with PowerShell as Administrator</strong>.</li>
           <li>Go to Windows Settings -> <strong>Network & internet</strong> -> <strong>Mobile hotspot</strong> -> Turn <strong>ON</strong>.</li>
-          <li>In Windows Mobile Hotspot Settings, ensure <strong>DNS IP</strong> is set to your laptop's Hotspot IP (<code>192.168.137.1</code>).</li>
           <li>Connect your Smart TV, laptop, or phone to the Hotspot Wi-Fi network.</li>
         </ol>
       </div>
@@ -148,7 +157,7 @@
   </main>
 
   <script>
-    let isBlockingActive = true;
+    let isBlockingActive = false; // DEFAULT IS OFF (PAUSED) ON OPENING
 
     function showTab(name) {
       document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
@@ -172,28 +181,50 @@
 
     function updateToggleUI() {
       const btn = document.getElementById('master-toggle-btn');
+      const card = document.getElementById('status-card-banner');
+      const title = document.getElementById('banner-status-title');
+      const tag = document.getElementById('banner-status-tag');
+      const desc = document.getElementById('banner-status-desc');
+
       if (isBlockingActive) {
         btn.style.background = '#10b981';
         btn.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.4)';
         btn.innerHTML = '🟢 PROTECTION ON';
+
+        card.style.background = 'linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(30,41,59,0.8) 100%)';
+        card.style.borderColor = 'rgba(16,185,129,0.3)';
+        title.innerText = '🟢 Protection Active & Running';
+        tag.style.background = 'rgba(16,185,129,0.2)';
+        tag.style.color = '#34d399';
+        tag.innerText = 'Laptop Proxy Gateway: 192.168.137.1';
+        desc.innerText = 'All Smart TV DNS requests & Layer 4 TLS handshakes are routed directly through your Windows laptop. Blocklists active.';
       } else {
         btn.style.background = '#ef4444';
         btn.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.4)';
         btn.innerHTML = '🔴 PROTECTION OFF (PAUSED)';
+
+        card.style.background = 'linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(30,41,59,0.8) 100%)';
+        card.style.borderColor = 'rgba(239,68,68,0.3)';
+        title.innerText = '🔴 Protection Paused (Default Mode)';
+        tag.style.background = 'rgba(239,68,68,0.2)';
+        tag.style.color = '#fca5a5';
+        tag.innerText = 'Click Toggle Switch to Activate';
+        desc.innerText = 'Click the master toggle button above to activate real DNS ad-sinkholing and Layer 4 SSAI filtering across your Windows Mobile Hotspot.';
       }
     }
 
     function refreshRealData() {
-      // 1. Fetch Real Stats
       fetch('/api/stats')
         .then(res => res.json())
         .then(data => {
+          isBlockingActive = data.is_blocking_enabled;
+          updateToggleUI();
+
           document.getElementById('val-real-blocked').innerText = data.blocked_queries.toLocaleString();
           document.getElementById('val-real-total').innerText = data.total_queries.toLocaleString();
           document.getElementById('val-real-percentage').innerText = data.blocked_percentage + '% Blocked';
           document.getElementById('val-real-rules').innerText = data.total_blocklist_domains.toLocaleString();
 
-          // Update Top Blocked List
           const topList = document.getElementById('real-top-domains-list');
           if (data.top_blocked_domains.length > 0) {
             topList.innerHTML = data.top_blocked_domains.map(item => `
@@ -202,10 +233,11 @@
                 <strong style="color: var(--danger)">${item.count}</strong>
               </li>
             `).join('');
+          } else {
+            topList.innerHTML = '<li class="empty-state">No blocked ad domains logged yet.</li>';
           }
         }).catch(err => console.log('Stats fetch Error:', err));
 
-      // 2. Fetch Real Connected Hotspot Devices
       fetch('/api/devices')
         .then(res => res.json())
         .then(devices => {
@@ -225,7 +257,6 @@
           }
         }).catch(err => console.log('Devices fetch Error:', err));
 
-      // 3. Fetch Real Logs Stream
       fetch('/api/logs')
         .then(res => res.json())
         .then(logs => {
@@ -237,11 +268,12 @@
                 <span>From ${log.ip} • ${log.time}</span>
               </div>
             `).join('');
+          } else {
+            ticker.innerHTML = '<div class="empty-state">No DNS queries received yet. Connect a Smart TV or device to your laptop\'s Mobile Hotspot to see real-time requests.</div>';
           }
         }).catch(err => console.log('Logs fetch Error:', err));
     }
 
-    // Refresh every 2 seconds
     setInterval(refreshRealData, 2000);
     refreshRealData();
   </script>
