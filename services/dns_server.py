@@ -6,8 +6,9 @@ import time
 import re
 import os
 import json
+from blocklist_loader import load_comprehensive_blocklist, is_ad_domain
 
-# REAL System State: DEFAULT IS OFF (PAUSED)
+# REAL System State: DEFAULT IS OFF (PAUSED) ON OPENING
 real_stats = {
     "total_queries": 0,
     "blocked_queries": 0,
@@ -17,27 +18,8 @@ real_stats = {
     "ssai_enabled": True
 }
 
-BLOCKLIST = set()
-
-def load_blocklists():
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    blocklist_dir = os.path.join(base_dir, "blocklists", "smart-tv")
-    
-    if os.path.exists(blocklist_dir):
-        for root, _, files in os.walk(blocklist_dir):
-            for file in files:
-                if file.endswith(".txt"):
-                    filepath = os.path.join(root, file)
-                    with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
-                        for line in f:
-                            line = line.strip()
-                            if line and not line.startswith("#"):
-                                domain = line.replace("||", "").replace("^", "").strip()
-                                if domain:
-                                    BLOCKLIST.add(domain.lower())
-    print(f"[DNS-Server] Loaded {len(BLOCKLIST)} real blocklist domains.")
-
-load_blocklists()
+# Initialize Blocklist Engine
+load_comprehensive_blocklist()
 
 def parse_domain(data):
     try:
@@ -86,18 +68,10 @@ def forward_dns_query(data, upstream_ip="1.1.1.1", upstream_port=53):
 def is_domain_blocked(domain):
     if not real_stats["is_blocking_enabled"]:
         return False
-    domain = domain.lower()
-    if domain in BLOCKLIST:
-        return True
-    for blocked in BLOCKLIST:
-        if domain.endswith("." + blocked) or blocked in domain:
-            return True
-    return False
+    return is_ad_domain(domain)
 
-# Real Active Ping Verification (Filters out stale Windows ARP entries)
 def is_ip_active(ip):
     try:
-        # Fast 100ms ping check
         cmd = f"ping -n 1 -w 150 {ip}"
         output = subprocess.check_output(cmd, shell=True, text=True, errors="ignore")
         return "TTL=" in output or "ttl=" in output or "bytes=" in output.lower()
@@ -113,9 +87,7 @@ def get_real_connected_devices():
             match = re.search(r'(\d+\.\d+\.\d+\.\d+)\s+([0-9a-fA-F\-]{17})\s+(\w+)', line)
             if match:
                 ip, mac, dev_type = match.groups()
-                # Check for Hotspot Subnet 192.168.137.x (excluding Gateway .1 and Broadcast .255)
                 if ip.startswith("192.168.137.") and not ip.endswith(".1") and not ip.endswith(".255"):
-                    # Verify real active reachability to eliminate stale disconnected entries
                     if is_ip_active(ip):
                         devices.append({
                             "ip": ip,
@@ -188,7 +160,6 @@ def bind_and_listen(host, port):
         print(f"[DNS-Server Warning] Binding to {host}:{port} failed: {e}")
 
 def start_dns_server():
-    # Attempt binding to Hotspot Gateway IP (192.168.137.1) AND All Interfaces (0.0.0.0)
     for host in ["192.168.137.1", "0.0.0.0", "127.0.0.1"]:
         threading.Thread(target=bind_and_listen, args=(host, 53), daemon=True).start()
 
