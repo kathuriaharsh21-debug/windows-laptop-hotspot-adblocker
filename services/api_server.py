@@ -3,7 +3,8 @@ import socketserver
 import json
 import os
 import urllib.parse
-from dns_server import real_stats, get_real_connected_devices, start_dns_server, BLOCKLIST
+from dns_server import real_stats, get_real_connected_devices, start_dns_server
+from blocklist_loader import FULL_BLOCKLIST
 import threading
 
 PORT = 3000
@@ -32,7 +33,7 @@ class RealAdBlockerHandler(http.server.SimpleHTTPRequestHandler):
                 "blocked_queries": real_stats["blocked_queries"],
                 "blocked_percentage": round((real_stats["blocked_queries"] / max(1, real_stats["total_queries"])) * 100, 1),
                 "is_blocking_enabled": real_stats["is_blocking_enabled"],
-                "total_blocklist_domains": len(BLOCKLIST),
+                "total_blocklist_domains": len(FULL_BLOCKLIST),
                 "top_blocked_domains": top_domains_formatted
             }
             self.wfile.write(json.dumps(response_data).encode("utf-8"))
