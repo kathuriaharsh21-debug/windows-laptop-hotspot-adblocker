@@ -1,0 +1,10 @@
+# Roku Smart TV Ads & Telemetry Blocklist
+||p.ads.roku.com^
+||cloudservices.roku.com^
+||austin.logs.roku.com^
+||cooper.logs.roku.com^
+||giga.logs.roku.com^
+||scribe.logs.roku.com^
+||ads.rokuroute.com^
+||track.roku.com^
+||display.ravm.tv^
