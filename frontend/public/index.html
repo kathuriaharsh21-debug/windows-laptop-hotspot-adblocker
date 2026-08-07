@@ -1,281 +1,509 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Windows Laptop Hotspot Smart-TV Ad Blocker — Real Command Center</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-gradient: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%);
-      --card-bg: rgba(30, 41, 59, 0.65);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --primary: #6366f1;
-      --accent: #10b981;
-      --danger: #ef4444;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
-    body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
-    header { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(16px); border-bottom: 1px solid var(--card-border); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .brand-title { font-size: 20px; font-weight: 700; background: linear-gradient(90deg, #818cf8, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .nav-tabs { display: flex; gap: 8px; background: rgba(0, 0, 0, 0.3); padding: 4px; border-radius: 12px; }
-    .tab-btn { padding: 8px 18px; border: none; background: transparent; color: var(--text-muted); border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
-    .tab-btn.active { background: rgba(99, 102, 241, 0.2); color: #ffffff; border: 1px solid rgba(129, 140, 248, 0.4); }
-    main { flex: 1; padding: 28px 32px; max-width: 1440px; margin: 0 auto; width: 100%; }
-    
-    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 24px; }
-    .metric-card { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
-    .metric-label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
-    .metric-value { font-size: 28px; font-weight: 700; color: #ffffff; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HotspotShield — Ad Blocker Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .card { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
-    .card-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
-    .btn { padding: 8px 16px; border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s ease; }
-    .tag { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
-    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-    th { text-align: left; padding: 12px; font-size: 13px; color: var(--text-muted); border-bottom: 1px solid var(--card-border); }
-    td { padding: 12px; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.03); }
-    .hidden { display: none !important; }
-    
-    .ticker-list { display: flex; flex-direction: column; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; }
-    .ticker-item { padding: 8px 12px; background: rgba(0,0,0,0.25); border-radius: 6px; display: flex; justify-content: space-between; }
-    .ticker-blocked { color: #fca5a5; border-left: 3px solid var(--danger); }
-    .ticker-allowed { color: #6ee7b7; border-left: 3px solid var(--accent); }
-    .empty-state { padding: 20px; text-align: center; color: var(--text-muted); font-size: 14px; font-style: italic; }
-  </style>
+  :root {
+    --bg:       #08090d;
+    --surface:  #0f1117;
+    --card:     #14161f;
+    --border:   #1e2130;
+    --accent:   #6c63ff;
+    --green:    #22d3a4;
+    --red:      #ff4d6a;
+    --orange:   #f97316;
+    --text:     #e4e6f0;
+    --muted:    #6b7280;
+    --font:     'Inter', sans-serif;
+    --mono:     'JetBrains Mono', monospace;
+  }
+
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Background grid ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(108,99,255,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(108,99,255,.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Layout ── */
+  .app { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 24px 20px; }
+
+  /* ── Header ── */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 28px; padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), #a78bfa);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; box-shadow: 0 0 20px rgba(108,99,255,.4);
+  }
+  .logo-text h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -.3px; }
+  .logo-text p  { font-size: .75rem; color: var(--muted); margin-top: 1px; }
+
+  /* ── Master Toggle ── */
+  #masterToggle {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 24px; border-radius: 50px; border: none; cursor: pointer;
+    font-family: var(--font); font-size: .9rem; font-weight: 600;
+    transition: all .25s ease;
+  }
+  #masterToggle.off {
+    background: rgba(255,77,106,.1); color: var(--red);
+    border: 1.5px solid rgba(255,77,106,.3);
+    box-shadow: 0 0 20px rgba(255,77,106,.1);
+  }
+  #masterToggle.on {
+    background: rgba(34,211,164,.1); color: var(--green);
+    border: 1.5px solid rgba(34,211,164,.3);
+    box-shadow: 0 0 20px rgba(34,211,164,.15);
+  }
+  #masterToggle:hover { transform: scale(1.04); }
+  .toggle-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    transition: background .25s;
+  }
+  #masterToggle.off .toggle-dot { background: var(--red); animation: blink 1.4s infinite; }
+  #masterToggle.on  .toggle-dot { background: var(--green); }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* ── Stats row ── */
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px; margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 20px 22px;
+    position: relative; overflow: hidden;
+    transition: border-color .2s;
+  }
+  .stat-card:hover { border-color: var(--accent); }
+  .stat-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(108,99,255,.04), transparent);
+  }
+  .stat-label { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  .stat-value {
+    font-size: 2rem; font-weight: 800; margin: 6px 0 4px;
+    font-variant-numeric: tabular-nums;
+    background: linear-gradient(135deg, #fff, #a5b4fc);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .stat-sub { font-size: .73rem; color: var(--muted); }
+
+  /* ── Section heading ── */
+  .section-head {
+    display: flex; align-items: center; gap: 8px;
+    font-size: .78rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--muted); margin-bottom: 12px;
+  }
+  .section-head::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* ── Two-column layout ── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 20px;
+  }
+
+  /* ── Device list ── */
+  .device-list { display: flex; flex-direction: column; gap: 10px; }
+  .device-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 14px;
+    transition: border-color .2s;
+  }
+  .device-item:hover { border-color: var(--accent); }
+  .device-icon {
+    width: 36px; height: 36px; border-radius: 9px;
+    background: linear-gradient(135deg, #1e2130, #2a2d3e);
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .device-info { flex: 1; }
+  .device-name  { font-size: .85rem; font-weight: 600; }
+  .device-meta  { font-size: .72rem; color: var(--muted); font-family: var(--mono); margin-top: 2px; }
+  .device-badge {
+    font-size: .68rem; font-weight: 600; padding: 2px 10px; border-radius: 50px;
+    background: rgba(34,211,164,.1); color: var(--green);
+    border: 1px solid rgba(34,211,164,.25);
+  }
+  .no-devices {
+    text-align: center; padding: 32px; color: var(--muted);
+    font-size: .85rem;
+  }
+  .no-devices span { display: block; font-size: 2rem; margin-bottom: 8px; opacity: .4; }
+
+  /* ── Query log ── */
+  .log-list { display: flex; flex-direction: column; gap: 4px; max-height: 340px; overflow-y: auto; }
+  .log-list::-webkit-scrollbar { width: 4px; }
+  .log-list::-webkit-scrollbar-track { background: transparent; }
+  .log-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .log-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 10px; border-radius: 7px; font-size: .73rem;
+    font-family: var(--mono); transition: background .15s;
+  }
+  .log-item:hover { background: rgba(255,255,255,.03); }
+  .log-item.blocked { border-left: 2px solid var(--red); }
+  .log-item.allowed { border-left: 2px solid var(--green); }
+  .log-badge {
+    font-size: .65rem; font-weight: 700; padding: 1px 7px; border-radius: 4px;
+    min-width: 56px; text-align: center;
+  }
+  .log-item.blocked .log-badge { background: rgba(255,77,106,.15); color: var(--red); }
+  .log-item.allowed .log-badge { background: rgba(34,211,164,.1); color: var(--green); }
+  .log-domain { flex: 1; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .log-ip     { color: var(--muted); font-size: .68rem; }
+  .log-time   { color: var(--muted); font-size: .68rem; }
+
+  /* ── Top blocked ── */
+  .top-list { display: flex; flex-direction: column; gap: 6px; }
+  .top-item {
+    display: flex; align-items: center; gap: 10px;
+    font-size: .78rem; padding: 4px 0;
+  }
+  .top-bar-wrap { flex: 1; height: 4px; background: var(--border); border-radius: 2px; }
+  .top-bar { height: 4px; border-radius: 2px; background: var(--red); transition: width .5s; min-width: 4px; }
+  .top-domain { width: 220px; color: var(--text); font-family: var(--mono); font-size: .72rem;
+                white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .top-count { width: 40px; text-align: right; color: var(--muted); font-size: .72rem; }
+
+  /* ── Status bar ── */
+  #statusBar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; border-radius: 10px; margin-bottom: 20px;
+    font-size: .8rem; font-weight: 500;
+    transition: all .3s;
+  }
+  #statusBar.off { background: rgba(255,77,106,.06); border: 1px solid rgba(255,77,106,.2); color: var(--red); }
+  #statusBar.on  { background: rgba(34,211,164,.06); border: 1px solid rgba(34,211,164,.2); color: var(--green); }
+  .status-right { color: var(--muted); font-size: .73rem; }
+
+  /* ── Pulse ring on green ── */
+  .pulse-ring {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    margin-right: 8px; vertical-align: middle;
+  }
+  #statusBar.off .pulse-ring { background: var(--red); }
+  #statusBar.on  .pulse-ring { background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(34,211,164,.6); }
+    70%  { box-shadow: 0 0 0 8px rgba(34,211,164,0); }
+    100% { box-shadow: 0 0 0 0 rgba(34,211,164,0); }
+  }
+
+  /* ── How to use banner ── */
+  .howto {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 20px; margin-bottom: 20px;
+  }
+  .howto h2 { font-size: .95rem; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .step {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: var(--surface); border-radius: 10px; padding: 14px;
+  }
+  .step-num {
+    min-width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), #a78bfa);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .78rem; font-weight: 700;
+  }
+  .step-text strong { display: block; font-size: .82rem; margin-bottom: 3px; }
+  .step-text span { font-size: .73rem; color: var(--muted); line-height: 1.4; }
+
+  /* ── Last updated ── */
+  #lastUpdated { font-size: .7rem; color: var(--muted); text-align: right; margin-top: 16px; }
+
+  /* ── Counter animation ── */
+  @keyframes countUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .animate-in { animation: countUp .3s ease; }
+</style>
 </head>
 <body>
+<div class="app">
+
+  <!-- HEADER -->
   <header>
-    <div class="brand">
-      <div style="font-size:24px">💻</div>
-      <div>
-        <div class="brand-title">Windows Laptop Hotspot Ad Blocker</div>
-        <div style="font-size: 11px; color: var(--text-muted)">Real Live DNS Appliance Engine</div>
+    <div class="logo">
+      <div class="logo-icon">🛡</div>
+      <div class="logo-text">
+        <h1>HotspotShield</h1>
+        <p>Windows Laptop Hotspot Ad Blocker</p>
       </div>
     </div>
-    <div class="nav-tabs">
-      <button class="tab-btn active" onclick="showTab('dashboard')">📊 Real Stats</button>
-      <button class="tab-btn" onclick="showTab('devices')">📺 Live Connected Devices</button>
-      <button class="tab-btn" onclick="showTab('setup')">⚙️ Hotspot Setup</button>
-    </div>
-
-    <!-- Master ON / OFF Toggle Button: DEFAULT IS OFF (PAUSED) -->
-    <button id="master-toggle-btn" class="btn" style="background: #ef4444; color: #ffffff; padding: 10px 20px; font-size: 14px; font-weight: 700; border-radius: 20px; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);" onclick="toggleAdBlocker()">
-      🔴 PROTECTION OFF (PAUSED)
+    <button id="masterToggle" class="off" onclick="toggleBlocking()">
+      <span class="toggle-dot"></span>
+      <span id="toggleLabel">Protection OFF</span>
     </button>
   </header>
 
-  <main>
-    <section id="tab-dashboard">
-      <div class="card" id="status-card-banner" style="background: linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(30,41,59,0.8) 100%); border: 1px solid rgba(239,68,68,0.3);">
-        <div class="card-title">
-          <span id="banner-status-title">🔴 Protection Paused (Default Mode)</span>
-          <span class="tag" id="banner-status-tag" style="background:rgba(239,68,68,0.2); color:#fca5a5">Click Toggle Switch to Activate</span>
-        </div>
-        <p style="font-size: 13.5px; color: var(--text-muted);" id="banner-status-desc">
-          Click the master toggle button above to activate real DNS ad-sinkholing and Layer 4 SSAI filtering across your Windows Mobile Hotspot.
-        </p>
-      </div>
+  <!-- STATUS BAR -->
+  <div id="statusBar" class="off">
+    <span><span class="pulse-ring"></span><span id="statusText">Protection is PAUSED — Click the button above to activate</span></span>
+    <span class="status-right" id="blocklist-size">Loading blocklist...</span>
+  </div>
 
-      <div class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-label">Real Ads & Trackers Blocked</div>
-          <div class="metric-value" id="val-real-blocked">0</div>
-          <div class="metric-sub" id="val-real-percentage" style="color: var(--accent); font-size: 12px;">0% Blocked</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Total Real DNS Queries</div>
-          <div class="metric-value" id="val-real-total">0</div>
-          <div class="metric-sub" style="font-size: 12px; color: var(--text-muted);">From Hotspot Devices</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Blocklist Rules Active</div>
-          <div class="metric-value" id="val-real-rules">0</div>
-          <div class="metric-sub" style="font-size: 12px; color: #a5b4fc;">Samsung, LG, Roku, SSAI lists</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Actively Connected Devices</div>
-          <div class="metric-value" id="val-real-devices-count">0</div>
-          <div class="metric-sub" style="font-size: 12px; color: var(--accent);">Active Hotspot Clients</div>
+  <!-- HOW TO USE -->
+  <div class="howto">
+    <h2>📋 Setup (Do This Once)</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <strong>Run Setup as Admin</strong>
+          <span>Right-click <code>setup-windows-hotspot.ps1</code> → Run with PowerShell as Administrator. This adds firewall rules that force all DNS traffic through this blocker.</span>
         </div>
       </div>
-
-      <div class="card">
-        <div class="card-title">📡 Real Live DNS Query Stream</div>
-        <div class="ticker-list" id="real-query-ticker">
-          <div class="empty-state">No DNS queries received yet. Connect a Smart TV or device to your laptop's Mobile Hotspot to see real-time requests.</div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <strong>Turn On Hotspot</strong>
+          <span>Windows Settings → Network & Internet → Mobile hotspot → Turn ON. Connect your Smart TV, phone, or other laptop to this Wi-Fi.</span>
         </div>
       </div>
-
-      <div class="card">
-        <div class="card-title">🚫 Real Top Blocked Ad Domains</div>
-        <ul id="real-top-domains-list" style="list-style: none; display: flex; flex-direction: column; gap: 10px;">
-          <li class="empty-state">No blocked ad domains logged yet.</li>
-        </ul>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <strong>Enable Protection</strong>
+          <span>Click "Protection OFF" button above to turn it ON. All connected devices will now have ads blocked at the network level.</span>
+        </div>
       </div>
-    </section>
-
-    <section id="tab-devices" class="hidden">
-      <div class="card">
-        <div class="card-title">📺 Actively Connected Devices (Live Ping Verified)</div>
-        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
-          This table automatically verifies real active ICMP reachability to eliminate stale disconnected ARP entries. Devices disappear immediately when disconnected:
-        </p>
-        <table>
-          <thead>
-            <tr>
-              <th>Device IP Address</th>
-              <th>MAC Address</th>
-              <th>Device Type</th>
-              <th>Active Status</th>
-            </tr>
-          </thead>
-          <tbody id="real-devices-table-body">
-            <tr>
-              <td colspan="4" class="empty-state">No devices currently connected to Mobile Hotspot. Turn on Windows Mobile Hotspot and join the Wi-Fi.</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-text">
+          <strong>For Laptop YouTube Ads</strong>
+          <span>Install the included <code>extension/</code> folder as an unpacked Chrome extension. This adds DOM-level YouTube scriptlet blocking identical to Brave Browser.</span>
+        </div>
       </div>
-    </section>
+    </div>
+  </div>
 
-    <section id="tab-setup" class="hidden">
-      <div class="card">
-        <div class="card-title">⚙️ Windows Mobile Hotspot Configuration Checklist</div>
-        <ol style="padding-left: 20px; line-height: 1.8; color: var(--text-muted); font-size: 14px;">
-          <li>Right-click <code>setup-windows-hotspot.ps1</code> and select <strong>Run with PowerShell as Administrator</strong>.</li>
-          <li>Go to Windows Settings -> <strong>Network & internet</strong> -> <strong>Mobile hotspot</strong> -> Turn <strong>ON</strong>.</li>
-          <li>Connect your Smart TV, laptop, or phone to the Hotspot Wi-Fi network.</li>
-        </ol>
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total DNS Queries</div>
+      <div class="stat-value" id="s-total">0</div>
+      <div class="stat-sub">Since server started</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ads Blocked</div>
+      <div class="stat-value" id="s-blocked" style="background:linear-gradient(135deg,#ff4d6a,#f97316);-webkit-background-clip:text;">0</div>
+      <div class="stat-sub" id="s-pct">0% blocked</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Allowed Through</div>
+      <div class="stat-value" id="s-allowed" style="background:linear-gradient(135deg,#22d3a4,#6ee7b7);-webkit-background-clip:text;">0</div>
+      <div class="stat-sub">Clean traffic</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Blocklist Size</div>
+      <div class="stat-value" id="s-list">—</div>
+      <div class="stat-sub">Ad domains indexed</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID: Devices + Logs -->
+  <div class="main-grid">
+
+    <!-- Connected Devices -->
+    <div class="card">
+      <div class="section-head">Connected Devices</div>
+      <div class="device-list" id="deviceList">
+        <div class="no-devices"><span>📡</span>No devices on hotspot yet</div>
       </div>
-    </section>
-  </main>
+    </div>
 
-  <script>
-    let isBlockingActive = false; // DEFAULT IS OFF (PAUSED) ON OPENING
+    <!-- DNS Query Log -->
+    <div class="card">
+      <div class="section-head">Live DNS Query Log</div>
+      <div class="log-list" id="logList">
+        <div style="text-align:center;padding:32px;color:var(--muted);font-size:.82rem;">Waiting for queries...</div>
+      </div>
+    </div>
 
-    function showTab(name) {
-      document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('tab-' + name).classList.remove('hidden');
-      event.target.classList.add('active');
+  </div>
+
+  <!-- TOP BLOCKED -->
+  <div class="card">
+    <div class="section-head">Top Blocked Domains</div>
+    <div class="top-list" id="topList">
+      <div style="color:var(--muted);font-size:.82rem;text-align:center;padding:16px;">No blocked queries yet — toggle protection ON</div>
+    </div>
+  </div>
+
+  <div id="lastUpdated">Connecting to server...</div>
+</div>
+
+<script>
+'use strict';
+
+let isOn = false;
+let maxCount = 1;
+
+const DEVICE_ICONS = { default: '💻', tv: '📺', phone: '📱', tablet: '📱' };
+
+function guessIcon(name) {
+  name = (name || '').toLowerCase();
+  if (name.includes('tv') || name.includes('samsung') || name.includes('lg') || name.includes('roku') || name.includes('fire')) return '📺';
+  if (name.includes('phone') || name.includes('android') || name.includes('iphone')) return '📱';
+  return '💻';
+}
+
+async function toggleBlocking() {
+  try {
+    const r = await fetch('/api/toggle', { method: 'POST' });
+    const d = await r.json();
+    setToggleState(d.is_on);
+  } catch (e) {
+    console.error('Toggle failed', e);
+  }
+}
+
+function setToggleState(on) {
+  isOn = on;
+  const btn = document.getElementById('masterToggle');
+  const lbl = document.getElementById('toggleLabel');
+  const bar = document.getElementById('statusBar');
+  const txt = document.getElementById('statusText');
+  if (on) {
+    btn.className = 'on'; lbl.textContent = 'Protection ON';
+    bar.className = 'on';
+    txt.textContent = 'Protection is ACTIVE — All connected devices have ads blocked';
+  } else {
+    btn.className = 'off'; lbl.textContent = 'Protection OFF';
+    bar.className = 'off';
+    txt.textContent = 'Protection is PAUSED — Click the button above to activate';
+  }
+}
+
+function fmtNum(n) {
+  if (n >= 1e6) return (n/1e6).toFixed(1)+'M';
+  if (n >= 1e3) return (n/1e3).toFixed(1)+'K';
+  return String(n);
+}
+
+async function fetchStats() {
+  try {
+    const r = await fetch('/api/stats');
+    const d = await r.json();
+    document.getElementById('s-total').textContent   = fmtNum(d.total_queries);
+    document.getElementById('s-blocked').textContent = fmtNum(d.blocked_queries);
+    document.getElementById('s-allowed').textContent = fmtNum(d.allowed_queries);
+    document.getElementById('s-pct').textContent     = d.block_pct + '% of queries blocked';
+    document.getElementById('s-list').textContent    = fmtNum(d.blocklist_size);
+    document.getElementById('blocklist-size').textContent = `${fmtNum(d.blocklist_size)} ad domains loaded`;
+    if (d.is_on !== isOn) setToggleState(d.is_on);
+
+    // Top blocked
+    const topEl = document.getElementById('topList');
+    if (d.top_blocked && d.top_blocked.length > 0) {
+      maxCount = Math.max(...d.top_blocked.map(x => x.count), 1);
+      topEl.innerHTML = d.top_blocked.map(item => `
+        <div class="top-item">
+          <div class="top-domain">${item.domain}</div>
+          <div class="top-bar-wrap"><div class="top-bar" style="width:${Math.round(item.count/maxCount*100)}%"></div></div>
+          <div class="top-count">${item.count}</div>
+        </div>`).join('');
+    } else {
+      topEl.innerHTML = '<div style="color:var(--muted);font-size:.82rem;text-align:center;padding:16px;">No blocked queries yet — toggle protection ON</div>';
     }
+  } catch (e) {}
+}
 
-    function toggleAdBlocker() {
-      fetch('/api/mode/toggle', { method: 'POST' })
-        .then(res => res.json())
-        .then(data => {
-          isBlockingActive = data.is_blocking_enabled;
-          updateToggleUI();
-        })
-        .catch(() => {
-          isBlockingActive = !isBlockingActive;
-          updateToggleUI();
-        });
+async function fetchDevices() {
+  try {
+    const r = await fetch('/api/devices');
+    const devices = await r.json();
+    const el = document.getElementById('deviceList');
+    if (!devices || devices.length === 0) {
+      el.innerHTML = '<div class="no-devices"><span>📡</span>No devices connected to hotspot yet</div>';
+      return;
     }
+    el.innerHTML = devices.map(d => `
+      <div class="device-item">
+        <div class="device-icon">${guessIcon(d.name)}</div>
+        <div class="device-info">
+          <div class="device-name">${d.name || 'Unknown Device'}</div>
+          <div class="device-meta">${d.ip} &nbsp;·&nbsp; ${d.mac}</div>
+        </div>
+        <div class="device-badge">Connected</div>
+      </div>`).join('');
+  } catch (e) {}
+}
 
-    function updateToggleUI() {
-      const btn = document.getElementById('master-toggle-btn');
-      const card = document.getElementById('status-card-banner');
-      const title = document.getElementById('banner-status-title');
-      const tag = document.getElementById('banner-status-tag');
-      const desc = document.getElementById('banner-status-desc');
-
-      if (isBlockingActive) {
-        btn.style.background = '#10b981';
-        btn.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.4)';
-        btn.innerHTML = '🟢 PROTECTION ON';
-
-        card.style.background = 'linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(30,41,59,0.8) 100%)';
-        card.style.borderColor = 'rgba(16,185,129,0.3)';
-        title.innerText = '🟢 Protection Active & Running';
-        tag.style.background = 'rgba(16,185,129,0.2)';
-        tag.style.color = '#34d399';
-        tag.innerText = 'Laptop Proxy Gateway: 192.168.137.1';
-        desc.innerText = 'All Smart TV DNS requests & Layer 4 TLS handshakes are routed directly through your Windows laptop. Blocklists active.';
-      } else {
-        btn.style.background = '#ef4444';
-        btn.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.4)';
-        btn.innerHTML = '🔴 PROTECTION OFF (PAUSED)';
-
-        card.style.background = 'linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(30,41,59,0.8) 100%)';
-        card.style.borderColor = 'rgba(239,68,68,0.3)';
-        title.innerText = '🔴 Protection Paused (Default Mode)';
-        tag.style.background = 'rgba(239,68,68,0.2)';
-        tag.style.color = '#fca5a5';
-        tag.innerText = 'Click Toggle Switch to Activate';
-        desc.innerText = 'Click the master toggle button above to activate real DNS ad-sinkholing and Layer 4 SSAI filtering across your Windows Mobile Hotspot.';
-      }
+async function fetchLogs() {
+  try {
+    const r = await fetch('/api/logs');
+    const logs = await r.json();
+    const el = document.getElementById('logList');
+    if (!logs || logs.length === 0) {
+      el.innerHTML = '<div style="text-align:center;padding:32px;color:var(--muted);font-size:.82rem;">Waiting for queries...</div>';
+      return;
     }
+    el.innerHTML = logs.slice(0, 60).map(e => `
+      <div class="log-item ${e.status === 'BLOCKED' ? 'blocked' : 'allowed'}">
+        <span class="log-badge">${e.status}</span>
+        <span class="log-domain">${e.domain}</span>
+        <span class="log-ip">${e.client}</span>
+        <span class="log-time">${e.t}</span>
+      </div>`).join('');
+  } catch (e) {}
+}
 
-    function refreshRealData() {
-      fetch('/api/stats')
-        .then(res => res.json())
-        .then(data => {
-          isBlockingActive = data.is_blocking_enabled;
-          updateToggleUI();
+function updateTime() {
+  document.getElementById('lastUpdated').textContent =
+    `Last updated: ${new Date().toLocaleTimeString()}`;
+}
 
-          document.getElementById('val-real-blocked').innerText = data.blocked_queries.toLocaleString();
-          document.getElementById('val-real-total').innerText = data.total_queries.toLocaleString();
-          document.getElementById('val-real-percentage').innerText = data.blocked_percentage + '% Blocked';
-          document.getElementById('val-real-rules').innerText = data.total_blocklist_domains.toLocaleString();
+async function refresh() {
+  await Promise.all([fetchStats(), fetchDevices(), fetchLogs()]);
+  updateTime();
+}
 
-          const topList = document.getElementById('real-top-domains-list');
-          if (data.top_blocked_domains.length > 0) {
-            topList.innerHTML = data.top_blocked_domains.map(item => `
-              <li style="display:flex; justify-content:space-between; font-size:13px; padding: 6px 0; border-bottom: 1px solid var(--card-border);">
-                <span>${item.domain}</span>
-                <strong style="color: var(--danger)">${item.count}</strong>
-              </li>
-            `).join('');
-          } else {
-            topList.innerHTML = '<li class="empty-state">No blocked ad domains logged yet.</li>';
-          }
-        }).catch(err => console.log('Stats fetch Error:', err));
+// Initial load
+refresh();
 
-      fetch('/api/devices')
-        .then(res => res.json())
-        .then(devices => {
-          document.getElementById('val-real-devices-count').innerText = devices.length;
-          const tbody = document.getElementById('real-devices-table-body');
-          if (devices.length > 0) {
-            tbody.innerHTML = devices.map(dev => `
-              <tr>
-                <td><strong>${dev.ip}</strong></td>
-                <td><code>${dev.mac}</code></td>
-                <td><span class="tag" style="background:rgba(59,130,246,0.2); color:#93c5fd">${dev.type}</span></td>
-                <td><span class="tag" style="background:rgba(16,185,129,0.2); color:#34d399">${dev.status}</span></td>
-              </tr>
-            `).join('');
-          } else {
-            tbody.innerHTML = `<tr><td colspan="4" class="empty-state">No devices currently connected to Mobile Hotspot. Turn on Windows Mobile Hotspot and join the Wi-Fi.</td></tr>`;
-          }
-        }).catch(err => console.log('Devices fetch Error:', err));
-
-      fetch('/api/logs')
-        .then(res => res.json())
-        .then(logs => {
-          const ticker = document.getElementById('real-query-ticker');
-          if (logs.length > 0) {
-            ticker.innerHTML = logs.slice(0, 15).map(log => `
-              <div class="ticker-item ${log.status === 'BLOCKED' ? 'ticker-blocked' : 'ticker-allowed'}">
-                <span>[${log.status}] ${log.domain}</span>
-                <span>From ${log.ip} • ${log.time}</span>
-              </div>
-            `).join('');
-          } else {
-            ticker.innerHTML = '<div class="empty-state">No DNS queries received yet. Connect a Smart TV or device to your laptop\'s Mobile Hotspot to see real-time requests.</div>';
-          }
-        }).catch(err => console.log('Logs fetch Error:', err));
-    }
-
-    setInterval(refreshRealData, 2000);
-    refreshRealData();
-  </script>
+// Refresh every 2 seconds
+setInterval(refresh, 2000);
+// Devices refresh a bit slower
+setInterval(fetchDevices, 5000);
+</script>
 </body>
 </html>
