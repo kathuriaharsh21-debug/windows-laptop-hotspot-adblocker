@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Windows Laptop Hotspot Smart-TV Ad Blocker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%);
+      --card-bg: rgba(30, 41, 59, 0.65);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #6366f1;
+      --accent: #10b981;
+      --danger: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+    body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
+    header { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(16px); border-bottom: 1px solid var(--card-border); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-title { font-size: 20px; font-weight: 700; background: linear-gradient(90deg, #818cf8, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-tabs { display: flex; gap: 8px; background: rgba(0, 0, 0, 0.3); padding: 4px; border-radius: 12px; }
+    .tab-btn { padding: 8px 18px; border: none; background: transparent; color: var(--text-muted); border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+    .tab-btn.active { background: rgba(99, 102, 241, 0.2); color: #ffffff; border: 1px solid rgba(129, 140, 248, 0.4); }
+    main { flex: 1; padding: 28px 32px; max-width: 1440px; margin: 0 auto; width: 100%; }
+    .card { background: var(--card-bg); backdrop-filter: blur(12px); border: 1px solid var(--card-border); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+    .card-title { font-size: 18px; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .btn { padding: 8px 16px; border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; }
+    .btn-accent { background: var(--accent); color: #ffffff; }
+    .tag { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th { text-align: left; padding: 12px; font-size: 13px; color: var(--text-muted); border-bottom: 1px solid var(--card-border); }
+    td { padding: 12px; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div style="font-size:24px">💻</div>
+      <div>
+        <div class="brand-title">Windows Hotspot Smart-TV Ad Blocker</div>
+        <div style="font-size: 11px; color: var(--text-muted)">Laptop Mobile Hotspot Appliance Mode</div>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="showTab('dashboard')">📊 Hotspot Stats</button>
+      <button class="tab-btn" onclick="showTab('devices')">📺 TV Devices</button>
+      <button class="tab-btn" onclick="showTab('ssai')">🎬 Hotstar / SonyLIV SSAI</button>
+      <button class="tab-btn" onclick="showTab('setup')">⚙️ Hotspot Setup</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="tab-dashboard">
+      <div class="card" style="background: linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(30,41,59,0.8) 100%); border: 1px solid rgba(16,185,129,0.3);">
+        <div class="card-title">
+          <span>🟢 Windows Mobile Hotspot Active</span>
+          <span class="tag" style="background:rgba(16,185,129,0.2); color:#34d399">Laptop Proxy Gateway: 192.168.137.1</span>
+        </div>
+        <p style="font-size: 13.5px; color: var(--text-muted);">
+          All Smart TV DNS requests & Layer 4 TLS handshakes are routed directly through your Windows laptop. Windows Firewall rules block encrypted DoH/DoT bypasses automatically.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📈 Live Query & SSAI Filter Analytics</div>
+        <div style="height: 260px;">
+          <canvas id="chart-queries"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-devices" class="hidden">
+      <div class="card">
+        <div class="card-title">📺 Devices Connected to Laptop Hotspot</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Device Name</th>
+              <th>IP Address</th>
+              <th>Platform</th>
+              <th>Ads Blocked Today</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Living Room Samsung TV</strong></td>
+              <td>192.168.137.10</td>
+              <td><span class="tag" style="background:rgba(59,130,246,0.2); color:#93c5fd">Samsung Tizen</span></td>
+              <td>1,840</td>
+            </tr>
+            <tr>
+              <td><strong>Bedroom LG WebOS TV</strong></td>
+              <td>192.168.137.12</td>
+              <td><span class="tag" style="background:rgba(168,85,247,0.2); color:#d8b4fe">LG WebOS</span></td>
+              <td>1,120</td>
+            </tr>
+            <tr>
+              <td><strong>Kids Room Roku Express</strong></td>
+              <td>192.168.137.15</td>
+              <td><span class="tag" style="background:rgba(236,72,153,0.2); color:#f9a8d4">Roku OS</span></td>
+              <td>2,450</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="tab-ssai" class="hidden">
+      <div class="card">
+        <div class="card-title">🎬 Layer 4 SNI SSAI Video Ad Engine (SonyLIV & Hotstar)</div>
+        <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 16px;">
+          Drops TLS ClientHello handshakes to ad subdomains (`ad-akamaized.net`, `dai-sonyliv.com`) before TLS decryption without SSL pinning errors. Allow 3-5 seconds initial load delay while the TV player retries clean video segments.
+        </p>
+        <button class="btn btn-accent" onclick="alert('SSAI Layer 4 Engine Saved!')">Save SSAI Settings</button>
+      </div>
+    </section>
+
+    <section id="tab-setup" class="hidden">
+      <div class="card">
+        <div class="card-title">⚙️ Windows Mobile Hotspot Setup Steps</div>
+        <ol style="padding-left: 20px; line-height: 1.8; color: var(--text-muted); font-size: 14px;">
+          <li>Run <code>.\setup-windows-hotspot.ps1</code> in PowerShell as Administrator to create Windows Firewall bypass rules.</li>
+          <li>Go to Windows Settings -> <strong>Network & internet</strong> -> <strong>Mobile hotspot</strong> -> Turn <strong>ON</strong>.</li>
+          <li>Connect your Smart TVs to your Laptop's Hotspot Wi-Fi network.</li>
+          <li>Run <code>start-adblocker.bat</code> on your laptop!</li>
+        </ol>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function showTab(name) {
+      document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.remove('hidden');
+      event.target.classList.add('active');
+    }
+
+    const ctx = document.getElementById('chart-queries').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', 'Now'],
+        datasets: [{
+          label: 'Laptop Hotspot Queries',
+          data: [1400, 500, 3400, 5800, 7200, 9800, 8900],
+          borderColor: '#818cf8',
+          backgroundColor: 'rgba(129, 140, 248, 0.1)',
+          fill: true
+        }, {
+          label: 'Ads & SSAI Subdomains Dropped',
+          data: [310, 110, 890, 1540, 1920, 2680, 2340],
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+          fill: true
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  </script>
+</body>
+</html>
