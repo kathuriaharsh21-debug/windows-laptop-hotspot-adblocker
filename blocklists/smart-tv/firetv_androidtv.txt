@@ -1,0 +1,10 @@
+# Fire TV / Android TV / Xiaomi / Vizio Telemetry & Ads Blocklist
+||device-metrics-us.amazon.com^
+||device-metrics-us-2.amazon.com^
+||mads.amazon-adsystem.com^
+||aax-us-east.amazon-adsystem.com^
+||api.bifrost.tv.xiaomi.com^
+||tracking.miui.com^
+||tv.vizio.com^
+||tvads.vizio.com^
+||telemetry.vizio.com^
