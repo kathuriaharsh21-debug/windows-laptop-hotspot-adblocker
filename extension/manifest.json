@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "HotspotShield Ad Blocker",
+  "version": "2.0",
+  "description": "Brave-parity ad blocker: blocks 200k+ ad domains, kills YouTube pre-roll and mid-roll ads via scriptlet injection, hides ad elements via CSS cosmetic filters.",
+  "permissions": [
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
+    "scripting",
+    "tabs",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ad_domains",
+        "enabled": true,
+        "path": "rules/ad_domains.json"
+      }
+    ]
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "48": "icon48.png"
+    }
+  },
+  "icons": {
+    "48": "icon48.png"
+  }
+}
