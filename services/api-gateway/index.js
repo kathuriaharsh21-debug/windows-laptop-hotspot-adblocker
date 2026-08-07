@@ -27,6 +27,18 @@ app.get('/api/mode', (req, res) => {
   });
 });
 
+app.post('/api/mode/toggle', (req, res) => {
+  currentMode = (currentMode === 'Paused') ? 'Auto' : 'Paused';
+  modeLastUpdated = new Date().toISOString();
+  console.log(`[API-Gateway] Toggle Switch Clicked! New Status: ${currentMode}`);
+  res.json({
+    success: true,
+    enabled: currentMode !== 'Paused',
+    mode: currentMode,
+    message: currentMode === 'Paused' ? '🔴 Ad Blocker PAUSED (Bypass Mode Active)' : '🟢 Ad Blocker ACTIVE (Protection ON)'
+  });
+});
+
 app.post('/api/mode/ssai', (req, res) => {
   const { ssai_enabled, buffer_tolerance_sec } = req.body;
   ssaiMode = ssai_enabled ? 'Strict-SSAI' : 'Standard';
