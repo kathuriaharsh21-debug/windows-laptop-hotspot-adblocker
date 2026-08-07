@@ -1,102 +1,137 @@
-import http.server
-import socketserver
-import json
+"""
+api_server.py — Dashboard API server on port 3000
+
+Serves:
+  GET  /              -> dashboard HTML
+  GET  /api/stats     -> live stats JSON
+  GET  /api/devices   -> live connected hotspot devices
+  GET  /api/logs      -> last 100 DNS query log entries
+  POST /api/toggle    -> flip blocking on/off
+"""
+
 import os
-import urllib.parse
-from dns_server import real_stats, get_real_connected_devices, start_dns_server
-from blocklist_loader import FULL_BLOCKLIST
+import sys
+import json
 import threading
+import urllib.parse
+import socketserver
+from http.server import BaseHTTPRequestHandler, SimpleHTTPRequestHandler
 
-PORT = 3000
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR     = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FRONTEND_DIR = os.path.join(BASE_DIR, "frontend", "public")
+PORT         = 3000
 
-class RealAdBlockerHandler(http.server.SimpleHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=FRONTEND_DIR, **kwargs)
+# ── shared state imported from dns_server ────────────────────────────────────
+from dns_server import stats, stats_lock, get_connected_devices, start_dns_server, BLOCKLIST
+from blocklist_loader import load_blocklist
+
+
+class Handler(BaseHTTPRequestHandler):
+    log_message = lambda *a: None  # suppress per-request stdout noise
+
+    def _json(self, data: dict, status: int = 200):
+        body = json.dumps(data).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        try:
+            self.wfile.write(body)
+        except Exception:
+            pass
 
     def do_GET(self):
-        url = urllib.parse.urlparse(self.path)
-        path = url.path
+        path = urllib.parse.urlparse(self.path).path
 
         if path == "/api/stats":
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Access-Control-Allow-Origin", "*")
-            self.end_headers()
-            
-            sorted_domains = sorted(real_stats["top_blocked_domains"].items(), key=lambda x: x[1], reverse=True)[:10]
-            top_domains_formatted = [{"domain": d, "count": c} for d, c in sorted_domains]
-
-            response_data = {
-                "total_queries": real_stats["total_queries"],
-                "blocked_queries": real_stats["blocked_queries"],
-                "blocked_percentage": round((real_stats["blocked_queries"] / max(1, real_stats["total_queries"])) * 100, 1),
-                "is_blocking_enabled": real_stats["is_blocking_enabled"],
-                "total_blocklist_domains": len(FULL_BLOCKLIST),
-                "top_blocked_domains": top_domains_formatted
-            }
-            self.wfile.write(json.dumps(response_data).encode("utf-8"))
-            return
+            with stats_lock:
+                total = max(stats["total_queries"], 1)
+                top   = sorted(stats["top_blocked_domains"].items(), key=lambda x: -x[1])[:10]
+                data  = {
+                    "total_queries":    stats["total_queries"],
+                    "blocked_queries":  stats["blocked_queries"],
+                    "allowed_queries":  stats["allowed_queries"],
+                    "block_pct":        round(stats["blocked_queries"] / total * 100, 1),
+                    "is_on":            stats["is_blocking_enabled"],
+                    "blocklist_size":   len(BLOCKLIST),
+                    "top_blocked":      [{"domain": d, "count": c} for d, c in top],
+                }
+            self._json(data)
 
         elif path == "/api/devices":
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Access-Control-Allow-Origin", "*")
-            self.end_headers()
-            
-            devices = get_real_connected_devices()
-            self.wfile.write(json.dumps(devices).encode("utf-8"))
-            return
+            self._json(get_connected_devices())
 
         elif path == "/api/logs":
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Access-Control-Allow-Origin", "*")
-            self.end_headers()
-            
-            self.wfile.write(json.dumps(real_stats["query_log"]).encode("utf-8"))
-            return
+            with stats_lock:
+                self._json(stats["query_log"][:100])
 
         else:
-            return super().do_GET()
+            # Serve static files from frontend/public
+            req = self.path
+            if req == "/":
+                req = "/index.html"
+            filepath = os.path.join(FRONTEND_DIR, req.lstrip("/"))
+            if os.path.isfile(filepath):
+                try:
+                    with open(filepath, "rb") as f:
+                        body = f.read()
+                    ct = "text/html" if filepath.endswith(".html") else (
+                         "text/css" if filepath.endswith(".css") else
+                         "application/javascript" if filepath.endswith(".js") else
+                         "text/plain")
+                    self.send_response(200)
+                    self.send_header("Content-Type", ct)
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+                except Exception:
+                    self.send_response(500)
+                    self.end_headers()
+            else:
+                self.send_response(404)
+                self.end_headers()
 
     def do_POST(self):
-        url = urllib.parse.urlparse(self.path)
-        path = url.path
-
-        if path == "/api/mode/toggle":
-            real_stats["is_blocking_enabled"] = not real_stats["is_blocking_enabled"]
-            status = "ACTIVE" if real_stats["is_blocking_enabled"] else "PAUSED"
-            
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Access-Control-Allow-Origin", "*")
-            self.end_headers()
-            
-            resp = {
-                "success": True,
-                "is_blocking_enabled": real_stats["is_blocking_enabled"],
-                "status": status,
-                "message": f"Real DNS Blocking is now {status}"
-            }
-            self.wfile.write(json.dumps(resp).encode("utf-8"))
-            return
-
+        path = urllib.parse.urlparse(self.path).path
+        if path == "/api/toggle":
+            with stats_lock:
+                stats["is_blocking_enabled"] = not stats["is_blocking_enabled"]
+                state = stats["is_blocking_enabled"]
+            self._json({"ok": True, "is_on": state, "msg": f"Blocking {'ON' if state else 'OFF'}"})
         else:
             self.send_response(404)
             self.end_headers()
 
-def run_servers():
-    dns_thread = threading.Thread(target=start_dns_server, daemon=True)
-    dns_thread.start()
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.end_headers()
+
+
+def run():
+    import dns_server as ds
+    global BLOCKLIST
+    
+    print("[Startup] Loading blocklist (using cached lists)...")
+    bl = load_blocklist()
+    ds.BLOCKLIST = bl
+    # Make BLOCKLIST accessible globally in this module too
+    import builtins
+    builtins._BLOCKLIST_REF = bl
+
+    print("[Startup] Starting DNS sinkhole server...")
+    start_dns_server()
 
     socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(("0.0.0.0", PORT), RealAdBlockerHandler) as httpd:
-        print("===================================================")
-        print(f"[API-Server] REAL Dashboard Live on http://localhost:{PORT}")
-        print("===================================================")
-        httpd.serve_forever()
+    print(f"[Dashboard] Live at http://localhost:{PORT}")
+    print(f"[Dashboard] {len(bl):,} ad domains loaded")
+    print(f"[Dashboard] Blocking: OFF (toggle via dashboard)")
+
+    with socketserver.TCPServer(("0.0.0.0", PORT), Handler) as srv:
+        srv.serve_forever()
+
 
 if __name__ == "__main__":
-    run_servers()
+    run()
