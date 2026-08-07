@@ -1,0 +1,10 @@
+# LG WebOS Smart TV Ads & ACR Telemetry Blocklist
+||ad.lgappstv.com^
+||lgsmartad.com^
+||rdl.lgtvcommon.com^
+||ngpts.lgtvcommon.com^
+||ibis.lgappstv.com^
+||smartshare.lgtvcommon.com^
+||us.info.lgsmartad.com^
+||aic-ngp.lgsmartad.com^
+||lgtvonline.lge.com^
