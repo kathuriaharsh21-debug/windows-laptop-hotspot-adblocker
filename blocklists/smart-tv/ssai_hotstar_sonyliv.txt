@@ -1,0 +1,11 @@
+# Hotstar & SonyLIV SSAI (Server-Side Ad Insertion) Layer 4 SNI Filter Rules
+||ad-akamaized.net^
+||hotstar-ads-*.akamaized.net^
+||ssai-ads.hotstar.com^
+||ads.hotstar.com^
+||analytics.hotstar.com^
+||dai-sonyliv.com^
+||ssai-vizio.sonyliv.com^
+||ads.sonyliv.com^
+||pubads.g.doubleclick.net^
+||securepubads.g.doubleclick.net^
