@@ -7,12 +7,13 @@ import re
 import os
 import json
 
+# REAL System State: DEFAULT IS OFF (PAUSED)
 real_stats = {
     "total_queries": 0,
     "blocked_queries": 0,
     "query_log": [],
     "top_blocked_domains": {},
-    "is_blocking_enabled": True,
+    "is_blocking_enabled": False, # Default OFF on opening
     "ssai_enabled": True
 }
 
@@ -93,6 +94,16 @@ def is_domain_blocked(domain):
             return True
     return False
 
+# Real Active Ping Verification (Filters out stale Windows ARP entries)
+def is_ip_active(ip):
+    try:
+        # Fast 100ms ping check
+        cmd = f"ping -n 1 -w 150 {ip}"
+        output = subprocess.check_output(cmd, shell=True, text=True, errors="ignore")
+        return "TTL=" in output or "ttl=" in output or "bytes=" in output.lower()
+    except Exception:
+        return False
+
 def get_real_connected_devices():
     devices = []
     try:
@@ -102,74 +113,86 @@ def get_real_connected_devices():
             match = re.search(r'(\d+\.\d+\.\d+\.\d+)\s+([0-9a-fA-F\-]{17})\s+(\w+)', line)
             if match:
                 ip, mac, dev_type = match.groups()
+                # Check for Hotspot Subnet 192.168.137.x (excluding Gateway .1 and Broadcast .255)
                 if ip.startswith("192.168.137.") and not ip.endswith(".1") and not ip.endswith(".255"):
-                    devices.append({
-                        "ip": ip,
-                        "mac": mac.upper(),
-                        "type": dev_type,
-                        "name": f"Hotspot Device ({ip})",
-                        "status": "Connected to Laptop Hotspot"
-                    })
+                    # Verify real active reachability to eliminate stale disconnected entries
+                    if is_ip_active(ip):
+                        devices.append({
+                            "ip": ip,
+                            "mac": mac.upper(),
+                            "type": "Hotspot Device",
+                            "name": f"Device ({ip})",
+                            "status": "Active & Connected Right Now"
+                        })
     except Exception as e:
         print(f"[DNS-Server] Error reading ARP table: {e}")
     return devices
+
+function_lock = threading.Lock()
 
 def handle_dns_client(data, addr, server_socket):
     domain = parse_domain(data)
     if not domain:
         return
 
-    real_stats["total_queries"] += 1
-    client_ip = addr[0]
-    timestamp = time.strftime("%H:%M:%S")
+    with function_lock:
+        real_stats["total_queries"] += 1
+        client_ip = addr[0]
+        timestamp = time.strftime("%H:%M:%S")
 
-    if is_domain_blocked(domain):
-        real_stats["blocked_queries"] += 1
-        real_stats["top_blocked_domains"][domain] = real_stats["top_blocked_domains"].get(domain, 0) + 1
-        
-        log_entry = {
-            "status": "BLOCKED",
-            "domain": domain,
-            "ip": client_ip,
-            "time": timestamp
-        }
-        real_stats["query_log"].insert(0, log_entry)
-        if len(real_stats["query_log"]) > 50:
-            real_stats["query_log"].pop()
+        if is_domain_blocked(domain):
+            real_stats["blocked_queries"] += 1
+            real_stats["top_blocked_domains"][domain] = real_stats["top_blocked_domains"].get(domain, 0) + 1
             
-        print(f"[DNS Sinkhole] BLOCKED: {domain} from {client_ip}")
-        response = build_dns_response(data, "0.0.0.0")
-        server_socket.sendto(response, addr)
-    else:
-        log_entry = {
-            "status": "ALLOWED",
-            "domain": domain,
-            "ip": client_ip,
-            "time": timestamp
-        }
-        real_stats["query_log"].insert(0, log_entry)
-        if len(real_stats["query_log"]) > 50:
-            real_stats["query_log"].pop()
-
-        response = forward_dns_query(data)
-        if response:
+            log_entry = {
+                "status": "BLOCKED",
+                "domain": domain,
+                "ip": client_ip,
+                "time": timestamp
+            }
+            real_stats["query_log"].insert(0, log_entry)
+            if len(real_stats["query_log"]) > 50:
+                real_stats["query_log"].pop()
+                
+            print(f"[DNS Sinkhole] BLOCKED: {domain} from {client_ip}")
+            response = build_dns_response(data, "0.0.0.0")
             server_socket.sendto(response, addr)
         else:
-            fallback_resp = build_dns_response(data, "0.0.0.0")
-            server_socket.sendto(fallback_resp, addr)
+            log_entry = {
+                "status": "ALLOWED",
+                "domain": domain,
+                "ip": client_ip,
+                "time": timestamp
+            }
+            real_stats["query_log"].insert(0, log_entry)
+            if len(real_stats["query_log"]) > 50:
+                real_stats["query_log"].pop()
 
-def start_dns_server(host="0.0.0.0", port=53):
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            response = forward_dns_query(data)
+            if response:
+                server_socket.sendto(response, addr)
+            else:
+                fallback_resp = build_dns_response(data, "0.0.0.0")
+                server_socket.sendto(fallback_resp, addr)
+
+def bind_and_listen(host, port):
     try:
-        server_socket.bind((host, port))
-        print("===================================================")
-        print(f"[DNS-Server] REAL DNS Sinkhole Listening on UDP {host}:{port}")
-        print("===================================================")
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.bind((host, port))
+        print(f"[DNS-Server] Bound to UDP {host}:{port}")
         while True:
-            data, addr = server_socket.recvfrom(512)
-            threading.Thread(target=handle_dns_client, args=(data, addr, server_socket), daemon=True).start()
+            data, addr = sock.recvfrom(512)
+            threading.Thread(target=handle_dns_client, args=(data, addr, sock), daemon=True).start()
     except Exception as e:
-        print(f"[DNS-Server Warning] Could not bind to port {port}: {e}")
+        print(f"[DNS-Server Warning] Binding to {host}:{port} failed: {e}")
+
+def start_dns_server():
+    # Attempt binding to Hotspot Gateway IP (192.168.137.1) AND All Interfaces (0.0.0.0)
+    for host in ["192.168.137.1", "0.0.0.0", "127.0.0.1"]:
+        threading.Thread(target=bind_and_listen, args=(host, 53), daemon=True).start()
 
 if __name__ == "__main__":
     start_dns_server()
+    while True:
+        time.sleep(1)
